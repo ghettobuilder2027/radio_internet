@@ -1,5 +1,6 @@
 /**
-  Based on Vince Gellár (github.com/vincegellar) Licensed under GNU GPL v3
+  Based on Vince Gellár (github.com/vincegellar) 
+  and on https://github.com/frokats/Internet_Radio_ESP8266_VS1053
   Wiring:
   --------------------------------
   | VS1053  | ESP8266 |  ESP32   |
@@ -31,13 +32,17 @@ VS1053 player(VS1053_CS, VS1053_DCS, VS1053_DREQ);
 WiFiClient client;
 
 // webradio 
-const char *host = "icecast.radiofrance.fr"; 
-const char *path = "/franceinter-lofi.mp3";
+char *host = "icecast.radiofrance.fr"; 
+char *path = "/franceinter-midfi.mp3";
 int httpPort = 80;
+//const char *host = "icecast.radiofrance.fr"; 
+//const char *path = "/fip-lofi.aac?id=radiofrance";
+//int httpPort = 80;
+
+unsigned long TimePlay;
 
 
-// The buffer size 64 seems to be optimal. At 32 and 128 the sound might be brassy.
-uint8_t mp3buff[64];
+uint8_t mp3buff[32];   // vs1053 likes 32 bytes at a time
 
 void setup() {
     Serial.begin(115200);
@@ -68,20 +73,42 @@ void setup() {
     Serial.print("Requesting stream: ");
     Serial.println(path);
     client.print(String("GET ") + path + " HTTP/1.1\r\n" + "Host: " + host + "\r\n" + "Connection: close\r\n\r\n");
+    TimePlay=millis();
 }
 
 void loop() {
-    if (!client.connected()) {
-        Serial.println("Reconnecting...");
-        if (client.connect(host, httpPort)) {
-            client.print(String("GET ") + path + " HTTP/1.1\r\n" +
-                         "Host: " + host + "\r\n" +
-                         "Connection: close\r\n\r\n");
-        }
-    }
-    if (client.available() > 0) {
-        // The buffer size 64 seems to be optimal. At 32 and 128 the sound might be brassy.
-        uint8_t bytesread = client.read(mp3buff, 64);
-        player.playChunk(mp3buff, bytesread);
-    }
+  if (!client.connected()) {
+    Serial.println("Reconnecting...");
+    Connect2Radio(host, httpPort, path);
+  }
+  play_buffer();
+  
+  
+}
+
+void play_buffer(){
+  if (client.available() > 0){
+    uint8_t bytesread = client.read(mp3buff, 32);
+    player.playChunk(mp3buff, bytesread);
+  }  
+}
+
+void Connect2Radio(char *url, int pport , char *chemin )
+{
+  client.stop();
+  client.flush();
+  yield();
+  delay(100);
+  if (client.connect(url, pport)) {
+    yield();
+    client.print(String("GET ") + chemin + String ( " HTTP/1.1\r\n" ) +
+                 String ( "Host: " ) + url + String ( "\r\n" ) +
+                 String ( "Icy-MetaData:0") + String ("\r\n" ) +
+                 String ( "Connection: close\r\n\r\n" ) ) ;
+    yield();
+    delay(200);           
+  }
+  else {
+    Serial.println("No connection");
+  }
 }
