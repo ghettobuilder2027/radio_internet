@@ -1,7 +1,10 @@
+#include <SPIFFS.h>
+#include <WiFiSettings.h>    // https://github.com/Juerd/ESP-WiFiSettings
+#include <vs1053_ext.h>      // https://github.com/schreibfaul1/ESP32-vs1053_ext
 #include "Arduino.h"
 #include <SPI.h>
-#include "vs1053_ext.h"          // https://github.com/schreibfaul1/ESP32-vs1053_ext
-#include <WiFiManager.h>         // https://github.com/tzapu/WiFiManager    To avoid hardcoding wifi credentials
+
+//#include <WiFiManager.h>         // https://github.com/tzapu/WiFiManager    To avoid hardcoding wifi credentials
 
 // Digital I/O used
 #define SPI_MOSI      23
@@ -11,17 +14,20 @@
 #define VS1053_DCS     4
 #define VS1053_DREQ   35
 // RST relié à EN
-#define VOLUME  5
+#define VOLUME  12
 
 
 VS1053 mp3(VS1053_CS, VS1053_DCS, VS1053_DREQ);
 
 void setup() {
+  // Spi connection for the VS 1053
   SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
   Serial.begin(115200);
-  WiFiManager wifiManager;
-  wifiManager.autoConnect("Configure_webradio");
-  Serial.println("Connected.");
+  // Wifi code
+  SPIFFS.begin(true);  // On first run, will format after failing to mount
+  WiFiSettings.connect();
+  Serial.print("Password: ");
+  Serial.println(WiFiSettings.password);
     
   mp3.begin();
   mp3.printDetails();
