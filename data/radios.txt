@@ -1,1 +1,4 @@
-
+icecast.radiofrance.fr/franceculture-midfi.mp3
+icecast.radiofrance.fr/franceinter-midfi.mp3
+novazz.ice.infomaniak.ch/novazz-128.mp3
+direct.fipradio.fr/live/fip-midfi.mp3
