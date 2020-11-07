@@ -27,14 +27,14 @@ VS1053 mp3(VS1053_CS, VS1053_DCS, VS1053_DREQ);
 
 
 // Control stations
-const byte BUTTON_1(26),BUTTON_2(27),BUTTON_3(25),BUTTON_4(33);
+const byte BUTTON_1(27),BUTTON_2(26),BUTTON_3(25),BUTTON_4(33);
 Button btn_1(BUTTON_1);
 Button btn_2(BUTTON_2);
 Button btn_3(BUTTON_3);
 Button btn_4(BUTTON_4);
 
 
-#define VOLUME  27
+#define VOLUME  28
 
 // Radios
 String station ;
@@ -154,7 +154,7 @@ void main_loop_Task( void * pvParameters ){
   }
 }
 void WebserverTask( void * pvParameters ){ 
-  // Launching an parametring server
+  // Launching and parametring server
   if (!MDNS.begin(servername)) {          // Set your preferred server name, if you use "myserver" the address would be http://myserver.local/
     Serial.println(F("Error setting up MDNS responder!"));   
   } else {
@@ -210,7 +210,7 @@ void File_Upload(){
 
 void handleFileUpload(){ // upload a new file to the Filing system
   
-  HTTPUpload& uploadfile = server.upload(); // See https://github.com/esp8266/Arduino/tree/master/libraries/ESP8266WebServer/srcv
+  HTTPUpload& uploadfile = server.upload(); // See https://github.com/esp8266/Arduino/tree/master/libraries/ESP8266WebServer/src
   String filename = uploadfile.filename;
   if(!filename.startsWith("/")) filename = "/"+filename;
   if (filename == "/radios.txt") {
@@ -232,8 +232,11 @@ void handleFileUpload(){ // upload a new file to the Filing system
         webpage += F("<h3>File was successfully uploaded</h3>"); 
         webpage += F("<h2>Uploaded File Name: "); webpage += uploadfile.filename+"</h2>";
         webpage += F("<h2>File Size: "); webpage += file_size(uploadfile.totalSize) + "</h2><br/><br/>"; 
+        webpage += F("<h1> Restarting in 2 seconds ... </h1>");
         append_page_footer();
         server.send(200,"text/html",webpage);
+        delay(2000);
+        ESP.restart();
       } 
       else {
         ReportCouldNotCreateFile("upload");
@@ -316,7 +319,7 @@ String file_size(int bytes){
 void append_page_header() {
   webpage  = F("<!DOCTYPE html><html>");
   webpage += F("<head>");
-  webpage += F("<title>Radio Internet radio list</title>"); // NOTE: 1em = 16px
+  webpage += F("<title>Change radio stations</title>"); // NOTE: 1em = 16px
   webpage += F("<meta name='viewport' content='user-scalable=yes,initial-scale=1.0,width=device-width'>");
   webpage += F("<style>");
   webpage += F("body{max-width:85%;margin:0 auto;font-family:arial;font-size:105%;text-align:center;color:blue;background-color:#F7F2Fd;}");
@@ -345,7 +348,7 @@ void append_page_header() {
   webpage += F(".buttonw {border-radius:0.5em;background:#558ED5;padding:0.3em 0.3em;width:40%;color:white;font-size:70%;}");
   webpage += F("a{font-size:75%;}");
   webpage += F("p{font-size:75%;}");
-  webpage += F("</style></head><body><h1>Internet Radio   Please upload a text file named radios.txt with 4 webradio adress </h1>");
+  webpage += F("</style></head><body><h1>Internet Radio</h1>");
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
