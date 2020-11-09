@@ -123,6 +123,7 @@ void setup() {
   read_spiffs_station ();
   
   // Connect wifi
+  WiFiSettings.hostname="Configure_radio";
   WiFiSettings.connect();
   Serial.print("Password: ");
   Serial.println(WiFiSettings.password);
