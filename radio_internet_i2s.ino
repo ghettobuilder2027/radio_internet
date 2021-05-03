@@ -1,37 +1,141 @@
-
+#include <Button2.h>         // https://github.com/LennartHennigs/Button2
+#include <SPIFFS.h>
+#include <Audio.h>
 #include "Arduino.h"
 #include "WiFi.h"
-#include "Audio.h"
  
 // Digital I/O used
-#define I2S_DOUT      25  // DIN connection
-#define I2S_BCLK      27  // Bit clock
-#define I2S_LRC       26  // Left Right Clock
- 
+#define I2S_DOUT      33 // DIN connection   22
+#define I2S_BCLK      26  // Bit clock        25
+#define I2S_LRC       25    // Left Right Clock 26
+
+
+
 Audio audio;
- 
-String ssid =     "NETGEAR81";
-String password = "bravespider5";
+
+String ssid = "Freebox-1BF387";
+String password = "reformator*-adaquemus2-vineias-saporata29";
+
+const int BUTTON_1 = 4;
+const int BUTTON_2 = 5;
+const int BUTTON_3 = 21;
+const int BUTTON_4 = 23;
+Button2 btn1 = Button2(BUTTON_1);
+Button2 btn2 = Button2(BUTTON_2);
+Button2 btn3 = Button2(BUTTON_3);
+Button2 btn4 = Button2(BUTTON_4);
+
+unsigned int volume =  12;
+
+String station ;
+int stationNumber = 0;
+int stationTotal;
+String stations[12];
+
+
+void read_spiffs_station () {
+  int i = 0;
+  String line;
+  File file = SPIFFS.open("/radios.txt");
+  if(!file){ Serial.println("Failed to open file ");return; }
+  Serial.println("Found radios:");
+  while(file.available()){        
+    line = file.readStringUntil('\n'); // Read line by line from the file
+    stations[i] = line;
+    i++;    
+  }
+  stationTotal = i;
+  file.close();
+  Serial.print("Nombre de stations : ");
+  Serial.println(stationTotal);
+  for (i=0; i<stationTotal; i++) {
+    Serial.println(stations[i]);
+  }
+}
+
+void longpress(Button2& btn) {
+  String station_changed;
+  station_changed = station;
+  if (btn == btn1) changeVolume(1);
+  else if (btn == btn2) changeVolume(-1);
+  else if (btn == btn3) changeRadio(1);
+  else if (btn == btn4) changeRadio(-1);
+}
+
+void changeVolume(int change) {
+  if (change == -1 && volume > 1) {
+    volume--;
+    Serial.println("volume down");
+  } else if (change == 1  && volume <21) {
+    volume++;    
+    Serial.println("volume up");
+  }
+  Serial.println(volume);
+  audio.setVolume(volume);
+}
+
+void changeRadio(int change) {
+  
+  if (change==1) {
+    if (stationNumber == stationTotal-1) {
+      stationNumber=0 ;
+      Serial.println ("retour à 0");
+    } else {
+      stationNumber++;
+      Serial.println("On monte d'une radio");
+    }
+  } else if (change==-1){ 
+    if (stationNumber == 0) {
+      stationNumber=stationTotal-1 ;
+      Serial.println ("Dernière station");
+    } else {
+      stationNumber--;
+      Serial.println("On descend d'une radio");
+    }
+  }
+  station = stations[stationNumber];
+  Serial.println("radio changée");
+  audio.connecttohost(station.c_str()); 
+}
+  
 
 void setup() {
-    Serial.begin(115200);
-    WiFi.disconnect();
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(ssid.c_str(), password.c_str());
-    while (WiFi.status() != WL_CONNECTED) delay(1500);
-    Serial.println("wifiiiiiiiiiiiiiiii");
-    audio.setPinout(I2S_BCLK, I2S_LRC, I2S_DOUT);
-    audio.setVolume(15); // 0...21
-    audio.connecttohost("icecast.radiofrance.fr/franceinfo-midfi.mp3"); //  128k mp3
-    //audio.connecttohost("http://vis.media-ice.musicradio.com/CapitalMP3");
+  Serial.begin(115200);
+  
+  SPIFFS.begin(true);  
+  read_spiffs_station ();
+  
+  btn1.setClickHandler(longpress);
+  btn2.setClickHandler(longpress);
+  btn3.setClickHandler(longpress);
+  btn4.setClickHandler(longpress);
+    
+  WiFi.disconnect();
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid.c_str(), password.c_str());
+  while (WiFi.status() != WL_CONNECTED) delay(1500);
+  Serial.println("wifiiiiiiiiiiiiiiii");
+  
+  audio.setPinout(I2S_BCLK, I2S_LRC, I2S_DOUT);
+  audio.setVolume(volume); // 0...21
+  station = stations[stationNumber];
+  audio.connecttohost(station.c_str()); 
 }
- 
 void loop()
 {
-    audio.loop();
+  audio.loop();
+  btn1.loop();
+  btn2.loop();
+  btn3.loop();
+  btn4.loop();
 }
  
 // optional
+void audio_showstation(const char *info){
+    Serial.print("station     ");Serial.println(info);
+}
+
+/*
 void audio_info(const char *info){
     Serial.print("info        "); Serial.println(info);
 }
@@ -41,9 +145,7 @@ void audio_id3data(const char *info){  //id3 metadata
 void audio_eof_mp3(const char *info){  //end of file
     Serial.print("eof_mp3     ");Serial.println(info);
 }
-void audio_showstation(const char *info){
-    Serial.print("station     ");Serial.println(info);
-}
+
 void audio_showstreaminfo(const char *info){
     Serial.print("streaminfo  ");Serial.println(info);
 }
@@ -65,3 +167,4 @@ void audio_lasthost(const char *info){  //stream URL played
 void audio_eof_speech(const char *info){
     Serial.print("eof_speech  ");Serial.println(info);
 }
+*/
