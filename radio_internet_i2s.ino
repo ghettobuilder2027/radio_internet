@@ -13,8 +13,8 @@
 
 Audio audio;
 
-String ssid = "Freebox-1BF387";
-String password = "reformator*-adaquemus2-vineias-saporata29";
+String ssid = "";
+String password = "";
 
 const int BUTTON_1 = 4;
 const int BUTTON_2 = 5;
