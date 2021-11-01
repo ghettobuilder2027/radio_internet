@@ -25,7 +25,7 @@ Button2 btn2 = Button2(BUTTON_2);
 Button2 btn3 = Button2(BUTTON_3);
 Button2 btn4 = Button2(BUTTON_4);
 
-unsigned int volume =  12;
+unsigned int volume =  3;
 
 String station ;
 int stationNumber = 0;
@@ -105,15 +105,18 @@ void setup() {
   SPIFFS.begin(true);  
   read_spiffs_station ();
   
-  btn1.setClickHandler(longpress);
-  btn2.setClickHandler(longpress);
-  btn3.setClickHandler(longpress);
-  btn4.setClickHandler(longpress);
-    
+  btn1.setTapHandler(longpress);
+  btn2.setTapHandler(longpress);
+  btn3.setTapHandler(longpress);
+  btn4.setTapHandler(longpress);
+  Serial.println("Connecting to wifi");
   WiFi.disconnect();
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid.c_str(), password.c_str());
-  while (WiFi.status() != WL_CONNECTED) delay(1500);
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print("...");
+    delay(1500);
+  }
   Serial.println("wifiiiiiiiiiiiiiiii");
   
   audio.setPinout(I2S_BCLK, I2S_LRC, I2S_DOUT);
