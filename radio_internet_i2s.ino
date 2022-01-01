@@ -101,7 +101,8 @@ void changeRadio(int change) {
 
 void setup() {
   Serial.begin(115200);
-  
+  audio.setPinout(I2S_BCLK, I2S_LRC, I2S_DOUT);
+  audio.setVolume(1); // 0...21
   SPIFFS.begin(true);  
   read_spiffs_station ();
   
@@ -119,7 +120,6 @@ void setup() {
   }
   Serial.println("wifiiiiiiiiiiiiiiii");
   
-  audio.setPinout(I2S_BCLK, I2S_LRC, I2S_DOUT);
   audio.setVolume(volume); // 0...21
   station = stations[stationNumber];
   audio.connecttohost(station.c_str()); 
