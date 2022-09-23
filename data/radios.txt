@@ -6,3 +6,4 @@ novazz.ice.infomaniak.ch/novazz-128.mp3
 # Put your other radios after fo saving
 icecast.radiofrance.fr/franceinter-midfi.mp3
 icecast.radiofrance.fr/franceculture-midfi.mp3
+http://radiomeuh.ice.infomaniak.ch/radiomeuh-128.mp3
